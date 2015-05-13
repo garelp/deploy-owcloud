@@ -1,0 +1,73 @@
+create:
+neutron net-create test-net
+neutron subnet-create test-net 10.10.5.0/24
+net_id=$(neutron net-show test-net -f value -c id)
+nova boot --image cirros-0.3.0 --flavor 100 --nic net-id=$net_id test-cirros
+cinder create --display-name test-vol 5
+volume_id=$(cinder list | grep test-vol | awk '{print $2;}')
+nova volume-attach test-cirros $volume_id
+
+nova show test-cirros | grep status | awk '{print $4;}'
+
+delete:
+nova volume-detach test-cirros f9100a68-ca99-4271-998d-b650ced61a24
+cinder delete test-vol
+nova delete test-cirros
+neutron net-delete 1b5176aa-1df9-48fe-a643-1b5ee94cc472
+ou
+neutron net-delete test-net
+
+neutron firewall-rule-create --name owncloud-out-http --source-ip-address 10.10.5.10 --destination-port 80 --protocol tcp --action allow
+neutron firewall-rule-create --name owncloud-out-https --source-ip-address 10.10.5.10 --destination-port 443 --protocol tcp --action allow
+neutron firewall-rule-create --name owncloud-in-http --source-ip-address 82.245.103.175 --destination-ip-address 10.10.5.10 --destination-port 80 --protocol tcp --action allow
+neutron firewall-policy-insert-rule Policy-1 owncloud-out-http
+neutron firewall-policy-insert-rule Policy-1 owncloud-out-https
+neutron firewall-policy-insert-rule Policy-1 owncloud-in-http
+
+
+ansible -i hosts -u stack -s -m shell -a 'uname -a; id'  185.39.217.82
+
+ansible -i hosts -u stack -s -m shell -a 'yum -y install epel-release; yum makecache'  185.39.217.82
+ansible -i hosts -u stack -s -m shell -a 'yum -y install bash-completion'  185.39.217.82
+ansible -i hosts -u stack -s -m shell -a 'yum -y install httpd php php-mysql mariadb-server mariadb sqlite php-dom php-mbstring php-gd php-pdo wget bzip2'  185.39.217.82
+
+[mysqld]
+datadir=/srv/mysql
+
+
+mv /etc/my.cnf /etc/my.cnf.sav; cat /etc/my.cnf.sav | sed -e "s/var\/lib/srv/" > /etc/my.cnf
+crudini --set /etc/my.cnf.d/mysql-clients.cnf mysql socket /srv/mysql/mysql.sock
+crudini --set /etc/my.cnf.d/mysql-clients.cnf mysqladmin socket /srv/mysql/mysql.sock
+mkdir -p /srv/mysql; /bin/mysql_install_db; chown -R mysql. /srv/mysql
+
+ansible -i hosts -u stack -s -m shell -a 'mv /etc/my.cnf /etc/my.cnf.sav; cat /etc/my.cnf.sav | sed -e "s/var\/lib/srv/" > /etc/my.cnf' 185.39.217.82
+ansible -i hosts -u stack -s -m shell -a 'crudini --set /etc/my.cnf.d/mysql-clients.cnf mysql socket /srv/mysql/mysql.sock; crudini --set /etc/my.cnf.d/mysql-clients.cnf mysqladmin socket /srv/mysql/mysql.sock; mkdir -p /srv/mysql; /bin/mysql_install_db; chown -R mysql. /srv/mysql; systemctl start mariadb.service' 185.39.217.82
+
+systemctl enable httpd.service
+systemctl enable mariadb.service
+
+systemctl start mariadb.service
+systemctl start httpd.service
+
+mkdir -p /srv/web/
+wget https://download.owncloud.org/community/owncloud-7.0.4.tar.bz2
+tar -jxvf owncloud-7.0.4.tar.bz2 -C /srv/web
+chown -R apache.apache /srv/web/owncloud/
+
+ansible -i hosts -u stack -s -m shell -a 'mysqladmin create owncloud; echo "grant all on owncloud.* to 'clouddbuser'@'localhost' identified by 'password';" | mysql' 185.39.217.82
+
+grant all on clouddb.* to 'clouddbuser'@'localhost' identified by 'password';
+echo "grant all on owncloud.* to 'clouddbuser'@'localhost' identified by 'password';" | mysql
+
+
+ansible -i hosts -u stack -s -m shell -a 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 "1" "-1"; mkfs.ext3 /dev/vdb1'  185.39.217.82
+ansible -i hosts -u stack -s -m shell -a 'echo "/dev/vdb1 /srv ext3 rw,seclabel,relatime,data=ordered 0 0" >> /etc/fstab; mount -a' 185.39.217.82
+
+parted -s -a optimal /dev/vdb mklabel msdos
+parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 "1" "-1"
+mkfs.ext3 /dev/vdb1
+mount /dev/vdb1 /srv
+
+
+
+
