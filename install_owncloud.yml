@@ -52,7 +52,7 @@
       mysql_user: name=clouddbuser password=12345 priv=owncloud.*:ALL,GRANT state=present
 
     - name: download and install owncloud tarball
-      shell: 'cd /srv/web/; wget -q https://download.owncloud.org/community/owncloud-8.0.2.tar.bz2; tar -jxvf owncloud-8.0.2.tar.bz2 -C /srv/web; chown -R apache.apache /srv/web/owncloud/; rm -f owncloud-7.0.4.tar.bz2; ln -s /srv/web/owncloud /var/www/html/owncloud'
+      shell: 'cd /srv/web/; wget -q https://download.owncloud.org/community/owncloud-8.1.1.tar.bz2; tar -jxvf owncloud-8.1.1.tar.bz2 -C /srv/web; chown -R apache.apache /srv/web/owncloud/; rm -f owncloud-8.1.1.tar.bz2; ln -s /srv/web/owncloud /var/www/html/owncloud'
       args:
            creates: /srv/web/owncloud/
 
