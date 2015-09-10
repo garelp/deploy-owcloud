@@ -1,11 +1,13 @@
 #!/bin/bash
 
+#set -x
+
 
 TMPL_VM_NAME="owncloud-test"
 TMPL_NET_NAME="test-net"
 TMPL_SUBNET_NAME="test-subnet"
 TMPL_VOL_NAME="vol-owncloud"
-TMPL_KEY="key_pedro"
+TMPL_KEY="key_mediahub"
 TMPL_ROUTER="RouterProject-Pierre_Projet"
 TMPL_PUBLIC_NET="PublicNetwork-02"
 TMPL_FLOATING_IP="185.39.217.82"
@@ -29,7 +31,8 @@ if [ $? -eq 1 ]; then
 	neutron router-interface-add $ROUTER_ID $TMPL_SUBNET_NAME
 fi
 
-NET_ID=$(neutron net-show $TMPL_NET_NAME -f value -c id)
+#NET_ID=$(neutron net-show $TMPL_NET_NAME -f value -c id)
+NET_ID=$(neutron net-show $TMPL_NET_NAME -c id | grep id | awk '{print $4;}')
 
 nova boot --image centos7_x86_64 --key-name $TMPL_KEY --flavor 102 --nic net-id=$NET_ID,v4-fixed-ip=$TMPL_SRV_IP $TMPL_VM_NAME
 

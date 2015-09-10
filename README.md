@@ -7,5 +7,5 @@ To execute the playbook, use sudo with the stack user on the VM:
 - Execute the script create-owncloud-vm.sh to create the VM and associated volume
 - Adjust the public ip address in the host file
 - Run the ansible playbook in order to set up the application within the VM.
-- ansible-playbook -i host -u statck -s install_owncloud.yml
+- ansible-playbook -i hosts -u statck -s install_owncloud.yml
 
