@@ -2,20 +2,20 @@
 
 #set -x
 
+OPENSTACK='/Users/tracker/Dropbox/Dev/openstack-client/bin/openstack'
 
-TMPL_VM_NAME="owncloud-test"
-TMPL_NET_NAME="test-net"
-TMPL_SUBNET_NAME="test-subnet"
+TMPL_VM_NAME="owncloud"
+TMPL_NET_NAME="net-dmz-paris"
 TMPL_VOL_NAME="vol-owncloud"
-TMPL_KEY="key_mediahub"
-TMPL_ROUTER="RouterProject-Pierre_Projet"
-TMPL_PUBLIC_NET="PublicNetwork-02"
-TMPL_FLOATING_IP="185.39.217.82"
-TMPL_SRV_IP="10.10.5.10"
-TMPL_NET="10.10.5.0/24"
+TMPL_KEY="key_pedro"
+TMPL_SRV_IP="10.20.0.4"
+TMPL_NET="10.20.0.0/24"
+TMPL_IMAGE="centos_7.1-ok"
+TMPL_FLAVOR="1CPU-4GB"
+TMPL_AZ="zone1-groupa"
 
 function check_vm_active () {
-	VM_STATUS=$(nova show $1 | grep status | awk '{print $4;}')
+	VM_STATUS=$($OPENSTACK server show $1 | grep status | awk '{print $4;}')
 	echo $VM_STATUS
 	if [ "$VM_STATUS" == "ACTIVE" ]; then
 		return 1
@@ -23,21 +23,15 @@ function check_vm_active () {
 	return 0
 }
 
-neutron net-show $TMPL_NET_NAME > /dev/null
+$OPENSTACK network show $TMPL_NET_NAME > /dev/null
 if [ $? -eq 1 ]; then
-	neutron net-create $TMPL_NET_NAME
-	neutron subnet-create $TMPL_NET_NAME --name $TMPL_SUBNET_NAME $TMPL_NET
-	ROUTER_ID=$(neutron router-list | grep $TMPL_ROUTER | awk '{print $2;}')
-	neutron router-interface-add $ROUTER_ID $TMPL_SUBNET_NAME
+	echo "Please create Network first."
+	exit 1
 fi
 
-#NET_ID=$(neutron net-show $TMPL_NET_NAME -f value -c id)
-NET_ID=$(neutron net-show $TMPL_NET_NAME -c id | grep id | awk '{print $4;}')
+$OPENSTACK server create --image $TMPL_IMAGE --availability-zone $TMPL_AZ --key-name $TMPL_KEY --flavor $TMPL_FLAVOR --nic net-id=$TMPL_NET_NAME,v4-fixed-ip=$TMPL_SRV_IP $TMPL_VM_NAME
 
-nova boot --image centos7_x86_64 --key-name $TMPL_KEY --flavor 102 --nic net-id=$NET_ID,v4-fixed-ip=$TMPL_SRV_IP $TMPL_VM_NAME
-
-cinder create --display-name $TMPL_VOL_NAME 10
-VOLUME_ID=$(cinder list | grep $TMPL_VOL_NAME | awk '{print $2;}')
+$OPENSTACK volume create --size 15 --availability-zone $TMPL_AZ $TMPL_VOL_NAME
 
 check_vm_active $TMPL_VM_NAME
 while [ $? -eq 0 ]
@@ -45,8 +39,5 @@ do
 	check_vm_active $TMPL_VM_NAME
 done
 
-nova volume-attach $TMPL_VM_NAME $VOLUME_ID
+$OPENSTACK server add volume $TMPL_VM_NAME $TMPL_VOL_NAME
 
-PORT_ID=$(neutron port-list | grep $TMPL_SRV_IP | awk '{print $2;}')
-FLOATING_ID=$(neutron floatingip-list | grep $TMPL_FLOATING_IP | awk '{print $2;}')
-neutron floatingip-associate $FLOATING_ID $PORT_ID
