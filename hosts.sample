@@ -1,0 +1,5 @@
+[webservers]
+webserver-ip
+
+[database]
+dbserver_ip

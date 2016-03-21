@@ -1,0 +1,8 @@
+---
+# These tasks are responsible for copying the latest dev/production code from
+# the version control system. 
+
+- name: download and install owncloud tarball
+  shell: 'cd /srv/web/; wget -q https://download.owncloud.org/community/{{ owncloud_archive }}; tar -jxvf {{ owncloud_archive }} -C /srv/web; chown -R apache.apache /srv/web/owncloud/; rm -f {{ owncloud_archive }}; ln -s /srv/web/owncloud /var/www/html/owncloud'
+  args:
+       creates: /srv/web/owncloud/

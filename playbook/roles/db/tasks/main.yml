@@ -1,0 +1,50 @@
+---
+# This playbook will install MariaDB and create db user and give permissions.
+
+- name: Install MariaDB package
+  yum: name={{ item }} state=installed
+  with_items:
+   - mariadb-server
+   - MySQL-python
+   - libselinux-python
+   - libsemanage-python
+
+- name: check is /srv/mysql exists
+  stat: path=/srv/mysql
+  register: dbdir
+  
+- name: create filesystem on /dev/vdb
+  shell: 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 1 -1; mkfs.ext3 /dev/vdb1' 
+  args:
+      creates: /root/create.vdb
+  when: dbdir.stat.isdir is not defined
+
+- name: mount /dev/vdb on /srv
+  shell: 'echo "/dev/vdb1 /srv ext3 rw,seclabel,relatime,data=ordered 0 0" >> /etc/fstab; mount -a'
+  args:
+      creates: /root/mount.vdb
+  when: dbdir.stat.isdir is not defined
+
+- name: Create Mysql configuration file
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+
+- name: create directories on /srv for mysql
+  shell: 'mkdir -p /srv/mysql; /bin/mysql_install_db; chown -R mysql. /srv/mysql;'
+  args:
+      creates: /srv/mysql
+  when: dbdir.stat.isdir is not defined
+
+- name: Create MariaDB log file
+  file: path=/var/log/mysqld.log state=touch owner=mysql group=mysql mode=0775
+  
+- name: Create MariaDB PID directory
+  file: path=/var/run/mysqld state=directory owner=mysql group=mysql mode=0775
+
+- name: Start MariaDB Service
+  service: name=mariadb state=started enabled=yes
+
+- name: Create Application Database
+  mysql_db: name={{ dbname }} state=present
+
+- name: Create Application DB User
+  mysql_user: name={{ dbuser }} password={{ upassword }} priv=owncloud.*:ALL,GRANT host='%' state=present

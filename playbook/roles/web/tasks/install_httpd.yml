@@ -1,0 +1,48 @@
+---
+# These tasks install http and the php modules.
+
+- name: Install http and php etc
+  yum: name={{ item }} state=present
+  with_items:
+   - httpd
+   - php
+   - php-mysql
+   - git
+   - libsemanage-python
+   - libselinux-python
+   - sqlite
+   - php-dom 
+   - php-mbstring 
+   - php-gd 
+   - php-pdo 
+   - wget 
+   - bzip2
+   - MySQL-python
+
+- name: http service state
+  service: name=httpd state=started enabled=yes
+
+- name: disable SELinux permanetly
+  lineinfile: dest=/etc/selinux/config regexp="^SELINUX=" line=SELINUX=disabled
+
+- name: check is /srv/web exists
+  stat: path=/srv/web
+  register: webdir
+
+- name: create filesystem on /dev/vdb
+  shell: 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 1 -1; mkfs.ext3 /dev/vdb1' 
+  args:
+      creates: /root/create.vdb
+  when: webdir.stat.isdir is not defined
+
+- name: mount /dev/vdb on /srv
+  shell: 'echo "/dev/vdb1 /srv ext3 rw,seclabel,relatime,data=ordered 0 0" >> /etc/fstab; mount -a'
+  args:
+      creates: /root/mount.vdb
+  when: webdir.stat.isdir is not defined
+
+- name: create directories on /srv for web
+  shell: 'mkdir -p /srv/web/; chown -R apache.apache /srv/web/'
+  args:
+      creates: /srv/web
+  when: webdir.stat.isdir is not defined
