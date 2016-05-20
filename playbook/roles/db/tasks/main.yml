@@ -9,12 +9,18 @@
    - libselinux-python
    - libsemanage-python
 
+- name: disable SELinux permanetly
+  lineinfile: dest=/etc/selinux/config regexp="^SELINUX=" line=SELINUX=disabled
+
+- name: disable SELinux
+  selinux: state=disabled
+
 - name: check is /srv/mysql exists
   stat: path=/srv/mysql
   register: dbdir
-  
+
 - name: create filesystem on /dev/vdb
-  shell: 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 1 -1; mkfs.ext3 /dev/vdb1' 
+  shell: 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 1 -1; mkfs.ext3 /dev/vdb1'
   args:
       creates: /root/create.vdb
   when: dbdir.stat.isdir is not defined
@@ -36,7 +42,7 @@
 
 - name: Create MariaDB log file
   file: path=/var/log/mysqld.log state=touch owner=mysql group=mysql mode=0775
-  
+
 - name: Create MariaDB PID directory
   file: path=/var/run/mysqld state=directory owner=mysql group=mysql mode=0775
 

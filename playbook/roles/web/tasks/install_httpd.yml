@@ -11,11 +11,11 @@
    - libsemanage-python
    - libselinux-python
    - sqlite
-   - php-dom 
-   - php-mbstring 
-   - php-gd 
-   - php-pdo 
-   - wget 
+   - php-dom
+   - php-mbstring
+   - php-gd
+   - php-pdo
+   - wget
    - bzip2
    - MySQL-python
 
@@ -25,12 +25,15 @@
 - name: disable SELinux permanetly
   lineinfile: dest=/etc/selinux/config regexp="^SELINUX=" line=SELINUX=disabled
 
+- name: disable SELinux
+  selinux: state=disabled
+
 - name: check is /srv/web exists
   stat: path=/srv/web
   register: webdir
 
 - name: create filesystem on /dev/vdb
-  shell: 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 1 -1; mkfs.ext3 /dev/vdb1' 
+  shell: 'parted -s -a optimal /dev/vdb mklabel msdos; parted -s -a optimal -- /dev/vdb unit compact mkpart primary ext3 1 -1; mkfs.ext3 /dev/vdb1'
   args:
       creates: /root/create.vdb
   when: webdir.stat.isdir is not defined

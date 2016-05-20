@@ -6,14 +6,14 @@ OPENSTACK='/Users/tracker/Dropbox/Dev/openstack-client/bin/openstack'
 
 TMPL_VM_WEB="owncloud-web"
 TMPL_VM_DB="owncloud-db"
-TMPL_NET_NAME="net-dmz-paris"
+TMPL_NET_NAME="fr-internal-net"
 TMPL_VOL_WEB="vol-owncloud"
 TMPL_VOL_DB="vol-owncloud-db"
 TMPL_KEY="key_pedro"
-TMPL_WEB_IP="10.20.0.4"
-TMPL_DB_IP="10.20.0.3"
+TMPL_WEB_IP="10.20.0.87"
+TMPL_DB_IP="10.20.0.88"
 TMPL_NET="10.20.0.0/24"
-TMPL_IMAGE="centos_7.1-ok"
+TMPL_IMAGE="CentOS-7-x86_64-GenericCloud"
 TMPL_FLAVOR="1CPU-4GB"
 TMPL_AZ="zone1-groupa"
 
