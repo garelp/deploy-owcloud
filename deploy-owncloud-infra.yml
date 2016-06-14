@@ -1,23 +1,27 @@
 - name: Create Owncloud infra
   hosts: localhost
   tasks:
+#  - name: Get OpenStack client config
+#    os_client_config:
+#      clouds:
+#        - HH2_ECL
   - name: create 15g web volume
     os_volume:
-#      auth:
-#        user_domain_name: Default
-#        project_domain_name: Default
+      cloud: HH2_ECL
       state: present
       size: 15
       display_name: vol-owncloud-web
 
   - name: create 15g DB volume
     os_volume:
+      cloud: HH2_ECL
       state: present
       size: 15
       display_name: vol-owncloud-db
 
   - name: create port with a fixed ip for web server
     os_port:
+      cloud: HH2_ECL
       state: present
       name: port-web
       network: fr-internal-net
@@ -26,6 +30,7 @@
 
   - name: create port with a fixed ip for DB server
     os_port:
+      cloud: HH2_ECL
       state: present
       name: port-db
       network: fr-internal-net
@@ -35,6 +40,7 @@
   - name: launch an Web server
     ignore_errors: true
     os_server:
+       cloud: HH2_ECL
        state: present
        name: owncloud-web
        image: CentOS-7-x86_64-GenericCloud
@@ -47,6 +53,7 @@
   - name: launch a DB server
     ignore_errors: true
     os_server:
+       cloud: HH2_ECL
        state: present
        name: owncloud-db
        image: CentOS-7-x86_64-GenericCloud
@@ -58,6 +65,7 @@
 
   - name: attach volume to owncloud-web
     os_server_volume:
+      cloud: HH2_ECL
       state: present
       server: owncloud-web
       volume: vol-owncloud-web
@@ -65,6 +73,7 @@
 
   - name: attach volume to owncloud-db
     os_server_volume:
+      cloud: HH2_ECL
       state: present
       server: owncloud-db
       volume: vol-owncloud-db
