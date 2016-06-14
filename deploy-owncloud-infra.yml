@@ -3,9 +3,9 @@
   tasks:
   - name: create 15g web volume
     os_volume:
-      auth:
-        user_domain_name: Default
-        project_domain_name: Default
+#      auth:
+#        user_domain_name: Default
+#        project_domain_name: Default
       state: present
       size: 15
       display_name: vol-owncloud-web
