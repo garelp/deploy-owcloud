@@ -6,3 +6,5 @@ hosts
 hosts
 
 playbook/hosts.ECL
+
+*.retry

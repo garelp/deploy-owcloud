@@ -1,0 +1,68 @@
+- name: Create Owncloud infra
+  hosts: localhost
+  tasks:
+  - name: create 15g web volume
+    os_volume:
+      state: present
+      size: 15
+      display_name: vol-owncloud-web
+
+  - name: create 15g DB volume
+    os_volume:
+      state: present
+      size: 15
+      display_name: vol-owncloud-db
+
+  - name: create port with a fixed ip for web server
+    os_port:
+      state: present
+      name: port-web
+      network: fr-internal-net
+      fixed_ips:
+        - ip_address: 10.20.0.87
+
+  - name: create port with a fixed ip for DB server
+    os_port:
+      state: present
+      name: port-db
+      network: fr-internal-net
+      fixed_ips:
+        - ip_address: 10.20.0.88
+
+  - name: launch an Web server
+    ignore_errors: true
+    os_server:
+       state: present
+       name: owncloud-web
+       image: CentOS-7-x86_64-GenericCloud
+       key_name: key_pedro
+       timeout: 200
+       flavor: 1CPU-4GB
+       nics: 
+           - port-name: port-web
+
+  - name: launch a DB server
+    ignore_errors: true
+    os_server:
+       state: present
+       name: owncloud-db
+       image: CentOS-7-x86_64-GenericCloud
+       key_name: key_pedro
+       timeout: 200
+       flavor: 1CPU-4GB
+       nics:
+           - port-name: port-db
+
+  - name: attach volume to owncloud-web
+    os_server_volume:
+      state: present
+      server: owncloud-web
+      volume: vol-owncloud-web
+      device: /dev/vdb
+
+  - name: attach volume to owncloud-db
+    os_server_volume:
+      state: present
+      server: owncloud-db
+      volume: vol-owncloud-db
+      device: /dev/vdb
