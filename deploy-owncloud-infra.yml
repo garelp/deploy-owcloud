@@ -1,10 +1,6 @@
 - name: Create Owncloud infra
   hosts: localhost
   tasks:
-#  - name: Get OpenStack client config
-#    os_client_config:
-#      clouds:
-#        - HH2_ECL
   - name: create 15g web volume
     os_volume:
       cloud: HH2_ECL
