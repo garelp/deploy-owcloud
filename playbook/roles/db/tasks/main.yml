@@ -54,3 +54,9 @@
 
 - name: Create Application DB User
   mysql_user: name={{ dbuser }} password={{ upassword }} priv=owncloud.*:ALL,GRANT host='%' state=present
+
+- name: Copy database dump
+  copy: src=owncloud.sql dest=/tmp/owncloud.sql
+
+- name: Import database dump into Mysql
+  mysql_db: name=owncloud state=import target=/tmp/owncloud.sql

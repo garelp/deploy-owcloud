@@ -5,3 +5,9 @@ httpd_port: 80
 ntpserver: jp.pool.ntp.org
 repository: https://github.com/bennojoy/mywebapp.git
 owncloud_archive: owncloud-9.0.0.tar.bz2
+
+mysqlservice: mysqld
+mysql_port: 3306
+dbuser: clouddbuser
+dbname: owncloud
+upassword: 12345
