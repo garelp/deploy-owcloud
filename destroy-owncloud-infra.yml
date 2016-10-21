@@ -4,7 +4,7 @@
   - name: delete Web server
     ignore_errors: true
     os_server:
-       cloud: HH2_ECL
+       cloud: HH2_NTTE
        state: absent
        name: owncloud-web
        image: CentOS-7-x86_64-GenericCloud
@@ -17,7 +17,7 @@
   - name: delete DB server
     ignore_errors: true
     os_server:
-       cloud: HH2_ECL
+       cloud: HH2_NTTE
        state: absent
        name: owncloud-db
        image: CentOS-7-x86_64-GenericCloud
@@ -29,14 +29,14 @@
 
   - name: delete 15g web volume
     os_volume:
-      cloud: HH2_ECL
+      cloud: HH2_NTTE
       state: absent
       size: 15
       display_name: vol-owncloud-web
 
   - name: delete 15g DB volume
     os_volume:
-      cloud: HH2_ECL
+      cloud: HH2_NTTE
       state: absent
       size: 15
       display_name: vol-owncloud-db
